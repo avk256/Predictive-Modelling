@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from h2o.estimators.glm import H2OGeneralizedLinearEstimator
 from h2o.estimators.gbm import H2OGradientBoostingEstimator
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-
+import scipy
 from R2P_linregr_dataprep import columns_data_type, ch_sq_test, correlations, transformation, variable_importance_h2o, transformation_inv 
 
 ############################################################################
@@ -67,7 +67,7 @@ def linear_regression(dbHost="",dbPort="",userName="",password="",dbName="",quer
     ##############
 
     data = pd.read_csv("E:/Work/aspirantura/kafedra/upwork/RtoP/Models_sep/Datasets/50000_Sales_Records_Dataset_e.csv")
-    data = columns_data_type(data, columnsArray)
+    data = columns_data_type(data[0:1000], columnsArray)
     ent_cor,chisq_dependency,data,rm_cols, miss_cols, obj_t = correlations(data)
     #print(ent_cor,chisq_dependency, rm_cols, miss_cols)
     
@@ -75,6 +75,14 @@ def linear_regression(dbHost="",dbPort="",userName="",password="",dbName="",quer
     variable_imp = variable_importance_h2o(data, list(num_data.columns), yValue)
     vif_var = vif(num_data, yValue, 10)
     #print(variable_imp, vif_var)
+    num_data_inv = transformation_inv(num_data,obj_t)
+    x_mean = num_data_inv[xValues].mean()
+    x_min = num_data_inv[xValues].min()
+    x_max = num_data_inv[xValues].max()
+    x_quant25 = num_data_inv[xValues].quantile(0.25)
+    x_quant50 = num_data_inv[xValues].quantile(0.5)
+    x_quant75 = num_data_inv[xValues].quantile(0.75)
+    x_skew = scipy.stats.skew(num_data_inv[xValues])
 
     
     if(data[yValue].dtypes == 'float') or (data[yValue].dtypes == 'int'):
@@ -94,7 +102,7 @@ def linear_regression(dbHost="",dbPort="",userName="",password="",dbName="",quer
         test_inv = transformation_inv(test.as_data_frame(),obj_t)
         pred_y = test_inv[yValue]
         
-        linear_regr = [pred_y, true_y ,glm_model.r2(),glm_model.rmse(),ent_cor,glm_model.coef(),variable_imp,vif_var]
+        linear_regr = [pred_y, true_y ,glm_model.r2(),glm_model.rmse(),ent_cor,glm_model.coef(),variable_imp,vif_var,[x_mean,x_min,x_max,x_quant25,x_quant50,x_quant75,x_skew]]
         
     else:
         print("Finding variable importance by taking categorical variables as dependent variable")
@@ -124,8 +132,23 @@ def linear_regression(dbHost="",dbPort="",userName="",password="",dbName="",quer
      lists with text description 
 """
 
-def NLG(linear_regr):
-    pass
+def NLG(linear_regr, yValue="",xValues=""):
+    # correlated variables
+    corr = linear_regr[4]
+    corr = corr.drop(yValue)
+    mask1 = corr[yValue] >= 0.3
+    mask2 = corr[yValue] <= -0.2
+    mask3 = (corr[yValue] >= 0.2) & (corr[yValue] <= 0.3)
+    corr_val1 = "<li class=\"nlg-item\"><span class=\"nlgtext\">There is a mutual relationship between <strong>" + (corr[yValue][mask1].index) + "</strong><strong>" + yValue + "</strong>, With every unit of increase in"+ (corr[yValue][mask1].index) + " there is an increase in " + yValue + "</span></li>"
+    corr_val2 = "<li class=\"nlg-item\"><span class=\"nlgtext\">There is a mutual relationship between<strong> " + (corr[yValue][mask2].index) + "</strong><strong>" + yValue + "</strong></span>, With every unit of decrease in "+ (corr[yValue][mask2].index) + " there is an increase in " + yValue + "</span></li>"
+    corr_val3 = "<li class=\"nlg-item\"><span class=\"nlgtext\">There is a little or no relationship between <strong> " + (corr[yValue][mask3].index) + "</strong> and <strong>" + yValue + "</strong></span></li>"
+    # quantile and min, max values
+    #linear_regr[8] : [x_mean,x_min,x_max,x_quant25,x_quant50,x_quant75,x_skew]    
+    var_val = "<li class=\"nlg-item\"><span class=\"nlgtext\">The average value of <strong>"+str(xValues)+"</strong> is <strong>"+str(list(linear_regr[8][0]))+"</strong></span>","</li>"
+    quantile_val = "<li class=\"nlg-item\"><span class=\"nlgtext\">The minimum value of <strong>"+str(xValues)+"</strong> is <strong>" +str(list(linear_regr[8][1]))+"</strong> whereas <strong>25%</strong> of data lies below the value <strong>"+str(list(linear_regr[8][3]))+ "</strong> the median of <strong>"+str(xValues)+ "</strong> is <strong>"+str(list(linear_regr[8][4]))+"</strong> and the <strong>75%</strong> of data lies below the value <strong>"+str(list(linear_regr[8][5]))+"</strong> and the max value is <strong>"+str(list(linear_regr[8][2]))+"</strong></span></li>"
+    
+    return [corr_val1, corr_val2, corr_val3, var_val, quantile_val] 
+    
     
 """
  Plotting method 
@@ -171,8 +194,9 @@ except:
 
 
 
-linear_regr = linear_regression(yValue='Units Sold',xValues=['Total Revenue'],columnsArray=columnsArray)
+linear_regr = linear_regression(yValue='Total Revenue',xValues=['Units Sold', 'Total Cost'],columnsArray=columnsArray)
+
+NLG(linear_regr, yValue='Total Revenue',xValues=['Units Sold', 'Total Cost'])
 
 plotting(linear_regr)
 
-NLG(linear_regr)
