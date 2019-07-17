@@ -14,13 +14,182 @@ import itertools
 from sklearn.preprocessing import PowerTransformer
 from sklearn.preprocessing import LabelEncoder
 import statistics
+from dateutil.parser import parse
+import datetime
+import calendar
+####################################################################
+#import json
+#
+#
+#columnsArray = '[{"columnDisplayName":"S@#@#no","tableDisplayType":"string","columnName":"S#@#@no"},{"columnDisplayName":"Region","tableDisplayType":"string","columnName":"Region"},{"columnDisplayName":"Country","tableDisplayType":"string","columnName":"Country"},{"columnDisplayName":"Item Type","tableDisplayType":"string","columnName":"Item Type"},{"columnDisplayName":"Sales Channel","tableDisplayType":"string","columnName":"Sales Channel"},{"columnDisplayName":"Order Priority","tableDisplayType":"string","columnName":"Order Priority"},{"columnDisplayName":"Order Date","tableDisplayType":"string","columnName":"Order Date"},{"columnDisplayName":"Order ID","tableDisplayType":"string","columnName":"Order ID"},{"columnDisplayName":"Ship Date","tableDisplayType":"string","columnName":"Ship Date"},{"columnDisplayName":"Units Sold","tableDisplayType":"number","columnName":"Units Sold"},{"columnDisplayName":"Unit Price","tableDisplayType":"number","columnName":"Unit Price"},{"columnDisplayName":"Unit Cost","tableDisplayType":"number","columnName":"Unit Cost"},{"columnDisplayName":"Total Revenue","tableDisplayType":"number","columnName":"Total Revenue"},{"columnDisplayName":"Total Cost","tableDisplayType":"number","columnName":"Total Cost"},{"columnDisplayName":"target_var","tableDisplayType":"number","columnName":"target_var"}]'
+##columnsArray = '[{"columnDisplayName":"Region","tableDisplayType":"string","columnName":"Region"},{"columnDisplayName":"Country","tableDisplayType":"string","columnName":"Country"},{"columnDisplayName":"Item Type","tableDisplayType":"string","columnName":"Item Type"},{"columnDisplayName":"Sales Channel","tableDisplayType":"string","columnName":"Sales Channel"},{"columnDisplayName":"Order Priority","tableDisplayType":"string","columnName":"Order Priority"},{"columnDisplayName":"Order Date","tableDisplayType":"string","columnName":"Order Date"},{"columnDisplayName":"Order ID","tableDisplayType":"string","columnName":"Order ID"},{"columnDisplayName":"Ship Date","tableDisplayType":"string","columnName":"Ship Date"},{"columnDisplayName":"Units Sold","tableDisplayType":"number","columnName":"Units Sold"},{"columnDisplayName":"Unit Price","tableDisplayType":"number","columnName":"Unit Price"},{"columnDisplayName":"Unit Cost","tableDisplayType":"number","columnName":"Unit Cost"},{"columnDisplayName":"Total Revenue","tableDisplayType":"number","columnName":"Total Revenue"},{"columnDisplayName":"Total Cost","tableDisplayType":"number","columnName":"Total Cost"},{"columnDisplayName":"target_var","tableDisplayType":"number","columnName":"target_var"}]'    
+#try:
+#    columnsArray = json.loads(columnsArray)
+#except:
+#    print('json format not valid')
+#columnsArray = pd.DataFrame(columnsArray)
+#columnsArray = columnsArray.replace(r'[^a-zA-Z0-9 -]', "", regex=True)
+#
+#data = pd.read_csv("E:/Work/aspirantura/kafedra/upwork/RtoP/Models_sep/Datasets/50000_Sales_Records_Dataset_e.csv")
+#data = data[0:100] 
+#data = columns_data_type(data, columnsArray)
+#data.info()
+#data, rm_cols = remove_col(data, ratio=3)
+#
+#columnsArray_ind = []
+#for i in columnsArray['columnName']:
+#    if i in rm_cols:
+#        columnsArray_ind.append(list(columnsArray[columnsArray['columnName']==i].index)[0])
+#columnsArray_ind1 = set(columnsArray.index)-set(columnsArray_ind)
+#print(columnsArray_ind1)
+#columnsArray_edit = columnsArray.iloc[list(columnsArray_ind1)]        
+#
+## select observations without NA's
+#data_clean = data.dropna()
+## creating H2O Frame and splitting for model train
+#data_clean.info()
+#hf = h2o.H2OFrame(data_clean)
+#train, valid, test = hf.split_frame(ratios=[.8, .1])
+#
+#valid.columns
+## select observations with NA's
+#data_na_index = [i for i in (set(list(data.index)) - set(list(data_clean.index))) ]
+#data_na = data.iloc[data_na_index]
+#
+#################### date to timestamp
+#
+#
+#            
+#
+#
+#
+#pd.DatetimeIndex(data['Ship Date'])
+#
+############################################################
+#
+#y_set = set(data_na.iloc[0].index) - set(data_na.iloc[0].dropna().index)
+#print(y_set)
+#gbm = H2OGradientBoostingEstimator()
+#xValues = set(data_na.columns)-y_set
+#print(xValues)
+#yValue = 'Region'
+#print(yValue)
+#print('GBM model training')
+#train.columns
+#gbm.train(xValues, yValue, training_frame=train, validation_frame=valid)
+##        test_na = data_na.iloc[i].drop(y_set)
+#test_na = data_na.iloc[0]
+#test_na = pd.DataFrame(test_na).transpose()
+#
+#print('Missing value prediction with GBM model')
+#
+#test_na = columns_data_type(test_na, columnsArray_edit)
+#print(test_na)
+#
+#
+##test_na = test_na.drop(yValue,axis=1)
+#print(test_na.info())
+#test_na = h2o.H2OFrame(test_na)
+#predicted = gbm.predict(test_na)
+#predicted = predicted.as_data_frame()
+#predicted_val = list(predicted['predict'])[0]
+#print(predicted_val)
+#data_na[yValue].iloc[0] = predicted_val
+#
+#
+############################################################
+#model_accuracy = []
+#for i in range(len(data_na)):
+#    # select features with NA's in current row
+#    print('Index in data_na_index')
+#    print(i)
+#    y_set = set(data_na.iloc[i].index) - set(data_na.iloc[i].dropna().index)
+#    gbm = H2OGradientBoostingEstimator()
+#    xValues = set(data_na.columns)-y_set
+#    print(xValues)
+#    
+#    for yValue in y_set:
+#        print('yValue from y_set for current index')
+#        print(yValue)
+#        print('GBM model training')
+#        gbm.train(xValues, yValue, training_frame=train, validation_frame=valid)
+#        model_accuracy.append(gbm.r2())
+##        test_na = data_na.iloc[i].drop(y_set)
+#        test_na = data_na.iloc[i]
+#        test_na = pd.DataFrame(test_na).transpose()
+#        
+#        print('Missing value prediction with GBM model')
+#        
+#        test_na = columns_data_type(test_na, columnsArray_edit)
+##        print(test_na.info())
+#        
+##        test_na = test_na.drop(xValues,axis=1)
+#        test_na = test_na.drop(yValue,axis=1)
+#        print(test_na.info())
+#        test_na = h2o.H2OFrame(test_na)
+#        predicted = gbm.predict(test_na)
+#        predicted = predicted.as_data_frame()
+#        predicted_val = list(predicted['predict'])[0]
+#        data_na[yValue].iloc[i] = predicted_val
+#
+#acc = np.mean(model_accuracy)
+#frames = [data_clean, data_na]
+#df = pd.concat(frames, axis=0)
+#df.info()
+#return df, acc 
 ####################################################################
 
-####################################################################
+"""
+Return whether the string can be interpreted as a date.
+
+ input:
+     string - value to check on date format
+ output:
+     boolean - true - date, false - not date
+"""
+
+def is_date(string, fuzzy=False):
+    try:
+        float(string)
+        return False
+    except ValueError:
+#        return False
+        if (str(string)=='nan'):
+            return False
+        if str(string).isnumeric():
+            return False
+        try: 
+            parse(str(string), fuzzy=fuzzy)
+            return True
+    
+        except:
+            return False
+
+"""
+Converting date feature to timestamp format
+
+ input:
+     data - raw data frame before columns_data_type()
+ output:
+     data - changed data frame with timestamp instead date string
+"""
+
+def date2stamp(data):
+    for i in list(data.columns):
+    #    print(i)
+        
+        for j in range(len(data)):
+    #        print(j)
+            if is_date(data[i].iloc[j]):
+                
+                date = data[i].iloc[j]
+                date = datetime.datetime.strptime(date, "%d/%m/%y")
+                data[i].iloc[j] = calendar.timegm(date.utctimetuple())
+    return data
 
 
 """
- Changing names of the featrures.
+ Changing names of the features.
  Set types of features: numeric or categorical.
  Replacing special characters in column names.
  input:
@@ -30,6 +199,8 @@ import statistics
      df - changed data frame
 """
 def columns_data_type(df, columnsArray = ""):
+    
+    df = date2stamp(df)
     columnsArray = pd.DataFrame(columnsArray)
     columnsArray = columnsArray.replace(r'[^a-zA-Z0-9 -]', "", regex=True)
     df.columns = columnsArray['columnName'] 
@@ -40,10 +211,85 @@ def columns_data_type(df, columnsArray = ""):
         if (sub['tableDisplayType'].values[0] == 'number'):
             df[i] = pd.to_numeric(df[i].values)
         if (sub['tableDisplayType'].values[0] == 'string'):
-            #df[i] = str(df[i])
+#            df[i] = df[i].astype(str)
             df[i] = df[i].astype('category')
             
-    return df
+            
+    return df,columnsArray
+
+"""
+ Imputation or removing of missing values using prediction model.
+ Replacing blanks with NA's.
+ input:
+     df - data frame after preprocessing
+     columnsArray - 
+     rm_cols - removed columns by remove_col() 
+ output:
+     df - changed data frame
+"""
+def GBM_impute(data, columnsArray, rm_cols):
+
+    columnsArray_ind = []
+    for i in columnsArray['columnName']:
+        if i in rm_cols:
+            columnsArray_ind.append(list(columnsArray[columnsArray['columnName']==i].index)[0])
+    columnsArray_ind1 = set(columnsArray.index)-set(columnsArray_ind)
+    print(columnsArray_ind1)
+    columnsArray_edit = columnsArray.iloc[list(columnsArray_ind1)]        
+    
+    # select observations without NA's
+    data_clean = data.dropna()
+    # creating H2O Frame and splitting for model train
+    data_clean.info()
+    hf = h2o.H2OFrame(data_clean)
+    train, valid, test = hf.split_frame(ratios=[.8, .1])
+    
+    valid.columns
+    # select observations with NA's
+    data_na_index = [i for i in (set(list(data.index)) - set(list(data_clean.index))) ]
+    data_na = data.iloc[data_na_index]
+
+    model_accuracy = []
+    for i in range(len(data_na)):
+        # select features with NA's in current row
+        print('Index in data_na_index')
+        print(i)
+        y_set = set(data_na.iloc[i].index) - set(data_na.iloc[i].dropna().index)
+        gbm = H2OGradientBoostingEstimator()
+        xValues = set(data_na.columns)-y_set
+        print(xValues)
+        
+        for yValue in y_set:
+            print('yValue from y_set for current index')
+            print(yValue)
+            print('GBM model training')
+            gbm.train(xValues, yValue, training_frame=train, validation_frame=valid)
+            model_accuracy.append(gbm.r2())
+    #        test_na = data_na.iloc[i].drop(y_set)
+            test_na = data_na.iloc[i]
+            test_na = pd.DataFrame(test_na).transpose()
+            
+            print('Missing value prediction with GBM model')
+            
+            test_na = columns_data_type(test_na, columnsArray_edit)
+    #        print(test_na.info())
+            
+    #        test_na = test_na.drop(xValues,axis=1)
+            test_na = test_na.drop(yValue,axis=1)
+            print(test_na.info())
+            test_na = h2o.H2OFrame(test_na)
+            predicted = gbm.predict(test_na)
+            predicted = predicted.as_data_frame()
+            predicted_val = list(predicted['predict'])[0]
+            data_na[yValue].iloc[i] = predicted_val
+    
+    acc = np.mean(model_accuracy)
+    frames = [data_clean, data_na]
+    df = pd.concat(frames, axis=0)
+    df.info()
+    return df, acc 
+
+
 
 """
  Imputation or removing of missing values using mean an mode.
@@ -54,10 +300,13 @@ def columns_data_type(df, columnsArray = ""):
          drop - drop all NA's
          mean - mean for numeric and 
          mode - for categorical
+         predict - impute missing val. with prediction model
+     columnsArray - 
+     rm_cols - removed columns by remove_col()
  output:
      df - changed data frame
 """
-def missing_val_impute(df, method):
+def missing_val_impute(df, method, columnsArray, rm_cols):
     try:
 
         miss_count = pd.DataFrame(df.isna().sum())
@@ -72,11 +321,13 @@ def missing_val_impute(df, method):
             num_data = num_data.fillna(num_data.mean())
             for i in list(cat_data.columns):
                 cat_data[i] = cat_data[i].fillna((cat_data[i].mode(dropna=True))[0])
-                    
+            frames = [cat_data,num_data]
+            df = pd.concat(frames, axis=1)
+        elif (method == 'predict'):
+            df, acc = GBM_impute(df, columnsArray, rm_cols)
+            
         else:
             print("Imputation method not specify")        
-        frames = [cat_data,num_data]
-        df = pd.concat(frames, axis=1)
     except:
         print("Imputation method doesn't meet the data")
         df = df.dropna()
@@ -209,7 +460,9 @@ def transformation_inv(data, obj):
  Pearson test for numerical
  Chi squared test for categorical
  input:
-     data - data frame outputed be columns_data_type() 
+     data - data frame outputed be columns_data_type()
+     columnsArray - 
+     rm_cols - removed columns by remove_col()
  output:
      corr matrix between numeric features
      chi squared method result for categorical features
@@ -217,10 +470,10 @@ def transformation_inv(data, obj):
      list of exclude columns
      list of missing values amount for each columns 
 """
-def correlations(data):
+def correlations(data, columnsArray):
     # data type conversion and deleting missing values 
-    data, miss_cols = missing_val_impute(data, method='impute')
     data, rm_cols = remove_col(data, ratio=3)
+    data, miss_cols = missing_val_impute(data, method='impute', columnsArray=columnsArray, rm_cols=rm_cols)
     data, obj_t = transformation(data)
     cat_data = data.select_dtypes(include=['category']).copy()
     num_data = data.select_dtypes(include=['number']).copy()
@@ -252,12 +505,13 @@ def correlations(data):
 def variable_importance_h2o(data, predictors, response_col):
     #cat_data = data.select_dtypes(include=['category']).copy()
     num_data = data.select_dtypes(include=['number']).copy()
-    
+
     if(data[response_col].dtypes == 'float') or (data[response_col].dtypes == 'int'):
         print("Finding variable importance by taking given numeric variable as a dependent variable")
+        
         hf = h2o.H2OFrame(num_data)
-
-        train, valid, test = hf.split_frame(ratios=[.8, .1])
+    
+        train, valid, test = hf.split_frame(ratios=[.8, .1])    
         
         
         glm_model = H2OGeneralizedLinearEstimator(family = 'gaussian')
@@ -277,11 +531,15 @@ def variable_importance_h2o(data, predictors, response_col):
         return Fin_imp_var
     else:
         print("Finding variable importance by taking categorical variables as dependent variable")
+        hf = h2o.H2OFrame(data)
+    
+        train, valid, test = hf.split_frame(ratios=[.8, .1])    
+
         gbm = H2OGradientBoostingEstimator()
         gbm.train(predictors, response_col, training_frame= train, validation_frame=valid)
 #        print(gbm)
         var_imp2 = gbm.varimp()
-        Fin_imp_var = [var_imp2]
+        Fin_imp_var = [[],var_imp2]
         return Fin_imp_var
         
         

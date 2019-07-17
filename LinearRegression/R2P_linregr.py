@@ -1,6 +1,6 @@
 import sys
 ### change to the current script folder
-sys.path.insert(0, 'C:\\Users\Alex\\Google Drive')
+sys.path.insert(0, 'E:\\Work\\aspirantura\\kafedra\\upwork\\RtoP\\PyModels\\LinearRegression')
 import h2o
 import pandas as pd
 import json
@@ -67,8 +67,9 @@ def linear_regression(dbHost="",dbPort="",userName="",password="",dbName="",quer
     ##############
 
     data = pd.read_csv("E:/Work/aspirantura/kafedra/upwork/RtoP/Models_sep/Datasets/50000_Sales_Records_Dataset_e.csv")
-    data = columns_data_type(data[0:1000], columnsArray)
-    ent_cor,chisq_dependency,data,rm_cols, miss_cols, obj_t = correlations(data)
+    data, columnsArray_e = columns_data_type(data[0:100], columnsArray)
+    
+    ent_cor,chisq_dependency,data,rm_cols, miss_cols, obj_t = correlations(data, columnsArray=columnsArray_e)
     #print(ent_cor,chisq_dependency, rm_cols, miss_cols)
     
     num_data = data.select_dtypes(include=['number']).copy()
