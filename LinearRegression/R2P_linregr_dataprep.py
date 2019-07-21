@@ -30,11 +30,18 @@ import calendar
 #columnsArray = pd.DataFrame(columnsArray)
 #columnsArray = columnsArray.replace(r'[^a-zA-Z0-9 -]', "", regex=True)
 #
-#data = pd.read_csv("E:/Work/aspirantura/kafedra/upwork/RtoP/Models_sep/Datasets/50000_Sales_Records_Dataset_e.csv")
-#data = data[0:100] 
-#data = columns_data_type(data, columnsArray)
+#data = pd.read_csv("E:/Work/aspirantura/kafedra/upwork/RtoP/Models_sep/Datasets/50000_Sales_Records_Dataset_e.csv",dtype=str)
+##data = pd.DataFrame(np.genfromtxt('E:/Work/aspirantura/kafedra/upwork/RtoP/Models_sep/Datasets/50000_Sales_Records_Dataset_e.csv', dtype=str))
 #data.info()
-#data, rm_cols = remove_col(data, ratio=3)
+#
+#
+#data, columnsArray_e = columns_data_type(data[0:100], columnsArray)
+#
+#ent_cor,chisq_dependency,data,rm_cols, miss_cols, obj_t = correlations(data, columnsArray=columnsArray_e, method='predict')
+
+
+
+##GBM_impute(data, columnsArray, rm_cols)
 #
 #columnsArray_ind = []
 #for i in columnsArray['columnName']:
@@ -51,53 +58,10 @@ import calendar
 #hf = h2o.H2OFrame(data_clean)
 #train, valid, test = hf.split_frame(ratios=[.8, .1])
 #
-#valid.columns
 ## select observations with NA's
 #data_na_index = [i for i in (set(list(data.index)) - set(list(data_clean.index))) ]
 #data_na = data.iloc[data_na_index]
 #
-#################### date to timestamp
-#
-#
-#            
-#
-#
-#
-#pd.DatetimeIndex(data['Ship Date'])
-#
-############################################################
-#
-#y_set = set(data_na.iloc[0].index) - set(data_na.iloc[0].dropna().index)
-#print(y_set)
-#gbm = H2OGradientBoostingEstimator()
-#xValues = set(data_na.columns)-y_set
-#print(xValues)
-#yValue = 'Region'
-#print(yValue)
-#print('GBM model training')
-#train.columns
-#gbm.train(xValues, yValue, training_frame=train, validation_frame=valid)
-##        test_na = data_na.iloc[i].drop(y_set)
-#test_na = data_na.iloc[0]
-#test_na = pd.DataFrame(test_na).transpose()
-#
-#print('Missing value prediction with GBM model')
-#
-#test_na = columns_data_type(test_na, columnsArray_edit)
-#print(test_na)
-#
-#
-##test_na = test_na.drop(yValue,axis=1)
-#print(test_na.info())
-#test_na = h2o.H2OFrame(test_na)
-#predicted = gbm.predict(test_na)
-#predicted = predicted.as_data_frame()
-#predicted_val = list(predicted['predict'])[0]
-#print(predicted_val)
-#data_na[yValue].iloc[0] = predicted_val
-#
-#
-############################################################
 #model_accuracy = []
 #for i in range(len(data_na)):
 #    # select features with NA's in current row
@@ -120,8 +84,8 @@ import calendar
 #        
 #        print('Missing value prediction with GBM model')
 #        
-#        test_na = columns_data_type(test_na, columnsArray_edit)
-##        print(test_na.info())
+#        test_na, columnsArray_edit = columns_data_type(test_na, columnsArray_edit)
+#        print(test_na)
 #        
 ##        test_na = test_na.drop(xValues,axis=1)
 #        test_na = test_na.drop(yValue,axis=1)
@@ -130,13 +94,19 @@ import calendar
 #        predicted = gbm.predict(test_na)
 #        predicted = predicted.as_data_frame()
 #        predicted_val = list(predicted['predict'])[0]
+#        print("Predicted value")
+#        print(predicted_val)
 #        data_na[yValue].iloc[i] = predicted_val
 #
 #acc = np.mean(model_accuracy)
 #frames = [data_clean, data_na]
 #df = pd.concat(frames, axis=0)
 #df.info()
-#return df, acc 
+##return df, acc 
+
+
+
+
 ####################################################################
 
 """
@@ -176,15 +146,19 @@ Converting date feature to timestamp format
 
 def date2stamp(data):
     for i in list(data.columns):
-    #    print(i)
-        
+       
         for j in range(len(data)):
     #        print(j)
             if is_date(data[i].iloc[j]):
                 
-                date = data[i].iloc[j]
-                date = datetime.datetime.strptime(date, "%d/%m/%y")
-                data[i].iloc[j] = calendar.timegm(date.utctimetuple())
+#                date = data[i].iloc[j]
+#                date = datetime.datetime.strptime(date, "%d/%m/%y")
+#                data[i].iloc[j] = str(date)
+                try:
+                    data[i].iloc[j] = str(datetime.datetime.strptime(data[i].iloc[j], "%d/%m/%y"))
+                except:
+                    continue
+#                data[i].iloc[j] = calendar.timegm(date.utctimetuple())
     return data
 
 
@@ -234,7 +208,7 @@ def GBM_impute(data, columnsArray, rm_cols):
         if i in rm_cols:
             columnsArray_ind.append(list(columnsArray[columnsArray['columnName']==i].index)[0])
     columnsArray_ind1 = set(columnsArray.index)-set(columnsArray_ind)
-    print(columnsArray_ind1)
+#    print(columnsArray_ind1)
     columnsArray_edit = columnsArray.iloc[list(columnsArray_ind1)]        
     
     # select observations without NA's
@@ -252,27 +226,27 @@ def GBM_impute(data, columnsArray, rm_cols):
     model_accuracy = []
     for i in range(len(data_na)):
         # select features with NA's in current row
-        print('Index in data_na_index')
-        print(i)
+#        print('Index in data_na_index')
+#        print(i)
         y_set = set(data_na.iloc[i].index) - set(data_na.iloc[i].dropna().index)
         gbm = H2OGradientBoostingEstimator()
         xValues = set(data_na.columns)-y_set
-        print(xValues)
+#        print(xValues)
         
         for yValue in y_set:
-            print('yValue from y_set for current index')
-            print(yValue)
-            print('GBM model training')
+#            print('yValue from y_set for current index')
+#            print(yValue)
+#            print('GBM model training')
             gbm.train(xValues, yValue, training_frame=train, validation_frame=valid)
             model_accuracy.append(gbm.r2())
     #        test_na = data_na.iloc[i].drop(y_set)
             test_na = data_na.iloc[i]
             test_na = pd.DataFrame(test_na).transpose()
             
-            print('Missing value prediction with GBM model')
+#            print('Missing value prediction with GBM model')
             
-            test_na = columns_data_type(test_na, columnsArray_edit)
-    #        print(test_na.info())
+            test_na, columnsArray_edit = columns_data_type(test_na, columnsArray_edit)
+#            print(test_na)
             
     #        test_na = test_na.drop(xValues,axis=1)
             test_na = test_na.drop(yValue,axis=1)
@@ -281,12 +255,13 @@ def GBM_impute(data, columnsArray, rm_cols):
             predicted = gbm.predict(test_na)
             predicted = predicted.as_data_frame()
             predicted_val = list(predicted['predict'])[0]
+#            print("Predicted value")
+#            print(predicted_val)
             data_na[yValue].iloc[i] = predicted_val
     
     acc = np.mean(model_accuracy)
     frames = [data_clean, data_na]
     df = pd.concat(frames, axis=0)
-    df.info()
     return df, acc 
 
 
@@ -298,8 +273,7 @@ def GBM_impute(data, columnsArray, rm_cols):
      df - data frame
      method
          drop - drop all NA's
-         mean - mean for numeric and 
-         mode - for categorical
+         impute - mean for numeric and mode - for categorical
          predict - impute missing val. with prediction model
      columnsArray - 
      rm_cols - removed columns by remove_col()
@@ -330,7 +304,7 @@ def missing_val_impute(df, method, columnsArray, rm_cols):
             print("Imputation method not specify")        
     except:
         print("Imputation method doesn't meet the data")
-        df = df.dropna()
+        df = df.dropna(axis=0)
     return df, miss_count
 
 """
@@ -462,7 +436,7 @@ def transformation_inv(data, obj):
  input:
      data - data frame outputed be columns_data_type()
      columnsArray - 
-     rm_cols - removed columns by remove_col()
+     method - method for missing val. imput (drop, impute, predict) 
  output:
      corr matrix between numeric features
      chi squared method result for categorical features
@@ -470,11 +444,15 @@ def transformation_inv(data, obj):
      list of exclude columns
      list of missing values amount for each columns 
 """
-def correlations(data, columnsArray):
+def correlations(data, columnsArray, method):
     # data type conversion and deleting missing values 
     data, rm_cols = remove_col(data, ratio=3)
-    data, miss_cols = missing_val_impute(data, method='impute', columnsArray=columnsArray, rm_cols=rm_cols)
+    data, miss_cols = missing_val_impute(data, method=method, columnsArray=columnsArray, rm_cols=rm_cols)
+    print("Data info after missing_val_impute()")
+    print(data.info())
     data, obj_t = transformation(data)
+    print("Data info after missing_val_impute()")
+    print(data.info())
     cat_data = data.select_dtypes(include=['category']).copy()
     num_data = data.select_dtypes(include=['number']).copy()
     if (len(num_data.columns)>1):
@@ -489,8 +467,6 @@ def correlations(data, columnsArray):
 #    data = pd.concat(frames, axis=1)
         
     return ent_cor,chisq_dependency,data,rm_cols, miss_cols, obj_t  
-
-
 
 """
  Determine variable importance method implements 
@@ -526,7 +502,8 @@ def variable_importance_h2o(data, predictors, response_col):
         gbm.train(predictors, response_col, training_frame= train, validation_frame=valid)
 
         var_imp2 = gbm.varimp()
-
+        
+        
         Fin_imp_var = [var_imp1, var_imp2]
         return Fin_imp_var
     else:
@@ -539,6 +516,7 @@ def variable_importance_h2o(data, predictors, response_col):
         gbm.train(predictors, response_col, training_frame= train, validation_frame=valid)
 #        print(gbm)
         var_imp2 = gbm.varimp()
+        
         Fin_imp_var = [[],var_imp2]
         return Fin_imp_var
         

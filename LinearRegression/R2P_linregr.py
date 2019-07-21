@@ -69,7 +69,7 @@ def linear_regression(dbHost="",dbPort="",userName="",password="",dbName="",quer
     data = pd.read_csv("E:/Work/aspirantura/kafedra/upwork/RtoP/Models_sep/Datasets/50000_Sales_Records_Dataset_e.csv")
     data, columnsArray_e = columns_data_type(data[0:100], columnsArray)
     
-    ent_cor,chisq_dependency,data,rm_cols, miss_cols, obj_t = correlations(data, columnsArray=columnsArray_e)
+    ent_cor,chisq_dependency,data,rm_cols, miss_cols, obj_t = correlations(data, columnsArray=columnsArray_e, method='predict')
     #print(ent_cor,chisq_dependency, rm_cols, miss_cols)
     
     num_data = data.select_dtypes(include=['number']).copy()
