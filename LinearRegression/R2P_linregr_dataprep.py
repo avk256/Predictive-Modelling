@@ -313,14 +313,18 @@ def missing_val_impute(df, method, columnsArray, rm_cols):
  input:
      df - data frame
      ratio - ratio observations to levels
+     no_rem_col - columns should not be deleted
  output:
      df - changed data frame
      removed_cols - list of removed columns
 """
-def remove_col(df, ratio):
+def remove_col(df, ratio, no_rem_col):
+    transformed_data = df
     try:
         cat_data = df.select_dtypes(include=['category']).copy()
         num_data = df.select_dtypes(include=['number']).copy()
+        if no_rem_col!='none':
+            no_rem_data = df[no_rem_col].copy()
 
         num_level_cat = []
         removed_cols = []
@@ -342,7 +346,12 @@ def remove_col(df, ratio):
             if list(var[var.index==i][0])[0] == 0:
                 num_data = num_data.drop(i, 1)
                 removed_cols.append(i)
-        frames = [cat_data,num_data]
+        if no_rem_col!='none':
+            frames = [cat_data,num_data,no_rem_data]
+            removed_cols.append(no_rem_col)
+            
+        else:
+            frames = [cat_data,num_data]
         transformed_data = pd.concat(frames, axis=1)
            
     except:
@@ -436,7 +445,8 @@ def transformation_inv(data, obj):
  input:
      data - data frame outputed be columns_data_type()
      columnsArray - 
-     method - method for missing val. imput (drop, impute, predict) 
+     method - method for missing val. imput (drop, impute, predict)
+     no_rem_col - columns should not be deleted
  output:
      corr matrix between numeric features
      chi squared method result for categorical features
@@ -444,9 +454,10 @@ def transformation_inv(data, obj):
      list of exclude columns
      list of missing values amount for each columns 
 """
-def correlations(data, columnsArray, method):
+def correlations(data, columnsArray, method, no_rem_col):
     # data type conversion and deleting missing values 
-    data, rm_cols = remove_col(data, ratio=3)
+    chisq_dependency = []
+    data, rm_cols = remove_col(data, ratio=3, no_rem_col=no_rem_col)
     data, miss_cols = missing_val_impute(data, method=method, columnsArray=columnsArray, rm_cols=rm_cols)
     print("Data info after missing_val_impute()")
     print(data.info())
